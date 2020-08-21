@@ -2,7 +2,11 @@ require('dotenv').config();
 
 var createError = require('http-errors');
 var express = require('express');
-var mongoDB = '';
+var mongoose = require('mongoose');
+var mongoDB = process.env.DB_URL;
+mongoose.connect(mongoDB, { userNewUrlParser: true, useUnifiedTopology: true});
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
