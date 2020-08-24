@@ -11,7 +11,7 @@ block content
     each val, index in book.genre
       a(href=val.url) #{val.name}
         if index < book.genre.length - 1
-          |  ,
+          | , 
   div(style='margin-left:20px;margin-top:20px')
     h4 Copies
 
@@ -28,3 +28,9 @@ block content
         p #[strong Due back:] #{val.due_back_formatted}
       p #[strong Id: ]&nbsp;
         a(href=val.url) #{val._id}
+
+  hr
+  p
+    a(href=book.url+'/delete') Delete Book
+  p
+    a(href=book.url+'/update') Update Book
