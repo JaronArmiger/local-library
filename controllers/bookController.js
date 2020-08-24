@@ -177,6 +177,65 @@ exports.book_update_get = function(req, res, next) {
   });
 };
 
-exports.book_update_post = function(req, res) {
-  res.send('NOT IMPLEMENTED: Book update POST');
-};
+exports.book_update_post = [
+  (req, res, next) => {
+    if(!(req.body.genre instanceof Array)) {
+      if (typeof req.body.genre==='undefined')
+        req.body.genre = [];
+      else
+        req.body.genre = new Array(req.body.genre);
+    }
+    next();
+  },
+  body('title', 'Title can\'t be empty').trim().isLength({ min: 1 }),
+  body('author', 'Author can\'t be empty').trim().isLength({ min: 1 }),
+  body('summary', 'Summary can\'t be empty').trim().isLength({ min: 1 }),
+  body('isbn', 'ISBN can\'t be empty').trim().isLength({ min: 1 }),
+
+  sanitizeBody('title').escape(),
+  sanitizeBody('author').escape(),
+  sanitizeBody('summary').escape(),
+  sanitizeBody('isbn').escape(),
+  sanitizeBody('genre.*').escape(),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    const book = new Book(
+      {
+        title: req.body.title,
+        author: req.body.author,
+        summary: req.body.summary,
+        isbn: req.body.isbn,
+        genre: (typeof req.body.genre==='undefined') ? [] : req.body.genre,
+        _id: req.params.id // this is required, or a new ID will be assigned
+      }
+    );
+    if (!errors.isEmpty()) {
+      async.parallel({
+        authors: function(callback) {
+          Author.find(callback);
+        },
+        genres: function(callback) {
+          Genre.find(callback);
+        },
+      }, function(err, results) {
+           if (err) return next(err);
+           for (let i = 0; i < results.genres.length; i++) {
+             if (book.genre.indexOf(results.genres[i]._id) > -1) {
+               results.genres[i].checked='true';
+             }
+           }
+           res.render('book_form', { title: 'Update Book',
+             authors: results.authors, genres: results.genres,
+             book: book, errors: errors.array()
+           });
+      });
+      return;
+    } else {
+      Book.findByIdAndUpdate(req.params.id, book, {}, function (err, thebook) {
+        if (err) return next(err);
+        res.redirect(thebook.url);
+      });
+    }
+  }
+];
