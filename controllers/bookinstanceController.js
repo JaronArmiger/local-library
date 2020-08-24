@@ -4,6 +4,9 @@ const Book = require('../models/book');
 const { body, validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 
+const status_options = ['Maintenance', 'Available', 'Loaned', 'Reserved'];
+
+
 exports.bookinstance_list = function(req, res, next) {
   BookInstance.find()
     .populate('book')
@@ -33,7 +36,7 @@ exports.bookinstance_create_get = function(req, res, next) {
   Book.find({}, 'title')
     .exec(function(err, books) {
       if (err) return next(err);
-      res.render('bookinstance_form', { title: 'Create BookInstance', book_list: books });
+      res.render('bookinstance_form', { title: 'Create BookInstance', book_list: books, status_options: status_options });
     });
 };
 
@@ -63,7 +66,8 @@ exports.bookinstance_create_post = [
           if (err) return next(err);
           res.render('bookinstance_form', { title: 'Create BookInstance', 
             book_list: books, selected_book: bookinstance.book._id, 
-            errors: errors.array(), bookinstance: bookinstance });
+            errors: errors.array(), bookinstance: bookinstance, 
+            status_options: status_options });
         });
       return;
     } else {
