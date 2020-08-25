@@ -79,8 +79,13 @@ exports.bookinstance_create_post = [
   }
 ];
 
-exports.bookinstance_delete_get = function(req, res) {
-  res.send('NOT IMPLEMENTED: BookInstance delete GET');
+exports.bookinstance_delete_get = function(req, res, next) {
+  BookInstance
+    .findById(req.params.id)
+    .exec(function(err, results) {
+      if (err) return next(err);
+      res.render('bookinstance_delete')
+    });
 };
 
 exports.bookinstance_delete_post = function(req, res) {
